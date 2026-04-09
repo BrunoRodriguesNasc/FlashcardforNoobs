@@ -1,8 +1,8 @@
 const CHAT_MODEL = "gpt-4o-mini";
 
 export interface GeneratedCard {
-  front: string;
-  back: string;
+  question: string;
+  answer: string;
 }
 
 export interface GenerateFlashcardsInput {
@@ -26,12 +26,12 @@ export async function generateFlashcardsWithOpenAI(
 """${topic}"""
 
 Rules:
-- "front": English word, phrase, or question (short).
-- "back": clear explanation or translation of meaning in English (1–3 sentences max).
+- "question": English word, phrase, or question (short).
+- "answer": clear explanation or translation of meaning in English (1–3 sentences max).
 - Vary difficulty and keep each card atomic.
 
 Return JSON with this exact shape:
-{"cards":[{"front":"...","back":"..."}]}`;
+{"cards":[{"question":"...","answer":"..."}]}`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -103,9 +103,13 @@ function extractCards(parsed: unknown): GeneratedCard[] {
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const x = item as Record<string, unknown>;
-    const front = typeof x.front === "string" ? x.front.trim() : "";
-    const back = typeof x.back === "string" ? x.back.trim() : "";
-    if (front && back) out.push({ front, back });
+    const q =
+      (typeof x.question === "string" ? x.question : typeof x.front === "string" ? x.front : "")
+        .trim();
+    const a =
+      (typeof x.answer === "string" ? x.answer : typeof x.back === "string" ? x.back : "")
+        .trim();
+    if (q && a) out.push({ question: q, answer: a });
   }
   return out;
 }

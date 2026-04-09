@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '../components/ui/button';
 import { FlashcardDisplay } from '../components/FlashcardDisplay';
@@ -21,7 +21,9 @@ export function StudyEnhanced() {
   const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [studyMode, setStudyMode] = useState<'flashcard' | 'quiz'>('flashcard');
-  const [startTime] = useState(Date.now());
+  const sessionStartRef = useRef(Date.now());
+  /** Bump when “Study again” resets the session clock. */
+  const [sessionEpoch, setSessionEpoch] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -30,17 +32,27 @@ export function StudyEnhanced() {
   const deckCards = flashcards.filter(card => card.deckId === deckId);
 
   useEffect(() => {
+    sessionStartRef.current = Date.now();
+    setElapsedTime(0);
+  }, [sessionEpoch]);
+
+  useEffect(() => {
     if (deckCards.length > 0) {
       setStudyCards(deckCards);
     }
-  }, [deckId]);
+  }, [deckId, deckCards]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
+    if (isComplete) return undefined;
+    const tick = () => {
+      setElapsedTime(
+        Math.floor((Date.now() - sessionStartRef.current) / 1000),
+      );
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [startTime]);
+  }, [isComplete, sessionEpoch]);
 
   const handleShuffle = () => {
     const shuffled = [...deckCards].sort(() => Math.random() - 0.5);
@@ -95,21 +107,26 @@ export function StudyEnhanced() {
   };
 
   const finishSession = () => {
+    const finalSeconds = Math.floor(
+      (Date.now() - sessionStartRef.current) / 1000,
+    );
+    setElapsedTime(finalSeconds);
     const session: StudySession = {
       id: crypto.randomUUID(),
       deckId: deckId!,
       cardsStudied: studyCards.length,
       correctAnswers: correctCount,
       incorrectAnswers: incorrectCount,
-      duration: Date.now() - startTime,
+      duration: finalSeconds * 1000,
       date: Date.now(),
       studyMode,
     };
-    setSessions([...sessions, session]);
+    setSessions((prev) => [...prev, session]);
     setIsComplete(true);
   };
 
   const handleRestart = () => {
+    setSessionEpoch((e) => e + 1);
     setCurrentIndex(0);
     setCorrectCount(0);
     setIncorrectCount(0);
