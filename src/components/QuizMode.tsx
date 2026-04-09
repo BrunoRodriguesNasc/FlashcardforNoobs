@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Check, X } from 'lucide-react';
-import { Flashcard } from '../types';
+import type { Flashcard } from "../types";
 
 interface QuizModeProps {
   card: Flashcard;

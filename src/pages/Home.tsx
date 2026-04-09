@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { DeckCard } from '../components/DeckCard';
 import { CreateDeckDialog } from '../components/CreateDeckDialog';
 import { Plus, Library, BarChart3 } from 'lucide-react';
-import { Deck, Flashcard } from '../types';
+import type { Deck, Flashcard } from "../types";
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export function Home() {

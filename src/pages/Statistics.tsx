@@ -2,9 +2,20 @@ import { useNavigate } from "react-router-dom";
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { ArrowLeft, Trophy, Target, Clock, TrendingUp, Star, Flame } from 'lucide-react';
-import { Deck, Flashcard, StudySession } from '../types';
+import type { Deck, Flashcard, StudySession } from "../types";
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 export function Statistics() {
   const navigate = useNavigate();
@@ -13,16 +24,15 @@ export function Statistics() {
   const [sessions] = useLocalStorage<StudySession[]>('study-sessions', []);
 
   const totalCards = flashcards.length;
-  const totalDecks = decks.length;
-  const totalStudySessions = sessions.length;
-  const totalMinutesStudied = Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60);
+  const totalMinutesStudied = Math.floor(
+    sessions.reduce((acc, s) => acc + s.duration, 0) / 60,
+  );
   
   const correctAnswers = sessions.reduce((acc, s) => acc + s.correctAnswers, 0);
   const incorrectAnswers = sessions.reduce((acc, s) => acc + s.incorrectAnswers, 0);
   const totalAnswers = correctAnswers + incorrectAnswers;
   const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
 
-  const favoriteCards = flashcards.filter(c => c.isFavorite).length;
   const mostStudiedCards = flashcards
     .filter(c => c.timesStudied && c.timesStudied > 0)
     .sort((a, b) => (b.timesStudied || 0) - (a.timesStudied || 0))
@@ -169,7 +179,9 @@ export function Statistics() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                    }
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"

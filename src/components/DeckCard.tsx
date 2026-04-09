@@ -1,4 +1,4 @@
-import { Deck } from '../types';
+import type { Deck } from "../types";
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { BookOpen, Trash2, Edit2, Sparkles } from 'lucide-react';

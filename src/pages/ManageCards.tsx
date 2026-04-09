@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { CreateCardDialog } from '../components/CreateCardDialog';
 import { Card } from '../components/ui/card';
 import { ArrowLeft, Plus, Edit2, Trash2, Search, Star } from 'lucide-react';
-import { Deck, Flashcard } from '../types';
+import type { Deck, Flashcard } from "../types";
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';

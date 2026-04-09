@@ -3,11 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '../components/ui/button';
 import { FlashcardDisplay } from '../components/FlashcardDisplay';
 import { QuizMode } from '../components/QuizMode';
-import { ArrowLeft, Shuffle, Check, Brain, CreditCard, Clock, Trophy } from 'lucide-react';
-import { Deck, Flashcard, StudySession } from '../types';
+import { ArrowLeft, Shuffle, Brain, CreditCard, Clock, Trophy } from "lucide-react";
+import type { Deck, Flashcard, StudySession } from "../types";
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Progress } from '../components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Card } from '../components/ui/card';
 
 export function StudyEnhanced() {

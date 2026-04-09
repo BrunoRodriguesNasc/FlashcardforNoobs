@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Deck } from '../types';
+import type { Deck } from "../types";
 
 interface CreateDeckDialogProps {
   open: boolean;
