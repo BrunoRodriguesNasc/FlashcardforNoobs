@@ -17,6 +17,18 @@ import {
   Cell,
 } from "recharts";
 
+/** Total study time from session durations (ms) as `m:ss` or `h:mm:ss`. */
+function formatTotalStudyTime(totalMs: number): string {
+  const totalSeconds = Math.floor(totalMs / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export function Statistics() {
   const navigate = useNavigate();
   const [decks] = useLocalStorage<Deck[]>('flashcard-decks', []);
@@ -24,9 +36,9 @@ export function Statistics() {
   const [sessions] = useLocalStorage<StudySession[]>('study-sessions', []);
 
   const totalCards = flashcards.length;
-  const totalMinutesStudied = Math.floor(
-    sessions.reduce((acc, s) => acc + s.duration, 0) / 60,
-  );
+  // `StudySession.duration` is stored in milliseconds (see StudyEnhanced.finishSession).
+  const totalStudyMs = sessions.reduce((acc, s) => acc + s.duration, 0);
+  const totalStudyTimeLabel = formatTotalStudyTime(totalStudyMs);
   
   const correctAnswers = sessions.reduce((acc, s) => acc + s.correctAnswers, 0);
   const incorrectAnswers = sessions.reduce((acc, s) => acc + s.incorrectAnswers, 0);
@@ -131,8 +143,8 @@ export function Statistics() {
                 <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalMinutesStudied}</div>
-                <div className="text-sm text-muted-foreground">Minutes</div>
+                <div className="text-2xl font-bold tabular-nums">{totalStudyTimeLabel}</div>
+                <div className="text-sm text-muted-foreground">Study time</div>
               </div>
             </div>
           </Card>

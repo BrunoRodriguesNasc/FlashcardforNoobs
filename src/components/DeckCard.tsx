@@ -7,11 +7,20 @@ interface DeckCardProps {
   deck: Deck;
   cardCount: number;
   onStudy: (deckId: string) => void;
+  /** When the deck has no cards — e.g. navigate to add cards */
+  onAddCards: (deckId: string) => void;
   onEdit: (deck: Deck) => void;
   onDelete: (deckId: string) => void;
 }
 
-export function DeckCard({ deck, cardCount, onStudy, onEdit, onDelete }: DeckCardProps) {
+export function DeckCard({
+  deck,
+  cardCount,
+  onStudy,
+  onAddCards,
+  onEdit,
+  onDelete,
+}: DeckCardProps) {
   return (
     <Card className="p-6 hover:shadow-xl transition-all hover:-translate-y-1 border-2 relative overflow-hidden">
       {/* Decorative gradient overlay */}
@@ -69,15 +78,16 @@ export function DeckCard({ deck, cardCount, onStudy, onEdit, onDelete }: DeckCar
         </div>
       </div>
       
-      <Button 
-        className="w-full" 
-        onClick={() => onStudy(deck.id)}
-        disabled={cardCount === 0}
+      <Button
+        className="w-full"
+        onClick={() =>
+          cardCount === 0 ? onAddCards(deck.id) : onStudy(deck.id)
+        }
         style={{
           backgroundColor: cardCount > 0 ? deck.color : undefined,
         }}
       >
-        {cardCount === 0 ? 'Add Cards to Study' : 'Start Studying'}
+        {cardCount === 0 ? "Add Cards to Study" : "Start Studying"}
       </Button>
     </Card>
   );

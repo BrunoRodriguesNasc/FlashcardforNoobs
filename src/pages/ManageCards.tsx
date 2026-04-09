@@ -1,23 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from '../components/ui/button';
 import { CreateCardDialog } from '../components/CreateCardDialog';
 import { Card } from '../components/ui/card';
-import { ArrowLeft, Plus, Edit2, Trash2, Search, Star } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Search, Star, Sparkles } from "lucide-react";
 import type { Deck, Flashcard } from "../types";
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Badge } from '../components/ui/badge';
+import { Badge } from "../components/ui/badge";
+import { Label } from "../components/ui/label";
+import { generateFlashcardsWithOpenAI } from "../services/openai/generateFlashcards";
+import { getOpenAiApiKeyFromEnv } from "../lib/clientEnv";
 
 export function ManageCards() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [decks] = useLocalStorage<Deck[]>('flashcard-decks', []);
   const [flashcards, setFlashcards] = useLocalStorage<Flashcard[]>('flashcards', []);
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [filterDeck, setFilterDeck] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiCount, setAiCount] = useState(8);
+  const [aiDeckId, setAiDeckId] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("deck");
+    if (fromUrl && decks.some((d) => d.id === fromUrl)) {
+      setFilterDeck(fromUrl);
+      setAiDeckId(fromUrl);
+      return;
+    }
+    setAiDeckId((prev) => prev || decks[0]?.id || "");
+  }, [searchParams, decks]);
 
   const handleCreateCard = (question: string, answer: string, deckId: string, isFavorite: boolean, difficulty?: 'easy' | 'medium' | 'hard') => {
     const newCard: Flashcard = {
@@ -47,6 +65,43 @@ export function ManageCards() {
       setFlashcards(flashcards.filter(c => c.id !== id));
     }
   };
+
+  async function handleGenerateAi() {
+    const apiKey = getOpenAiApiKeyFromEnv();
+    if (!apiKey) {
+      window.alert(
+        'Set VITE_OPENAI_API_KEY in web/.env (see .env.example) and restart the dev server.',
+      );
+      return;
+    }
+    if (!aiDeckId || !aiTopic.trim()) {
+      window.alert('Choose a deck and enter a topic.');
+      return;
+    }
+    setAiBusy(true);
+    try {
+      const generated = await generateFlashcardsWithOpenAI(apiKey, {
+        topic: aiTopic,
+        count: aiCount,
+      });
+      const additions: Flashcard[] = generated.map((g) => ({
+        id: crypto.randomUUID(),
+        question: g.question,
+        answer: g.answer,
+        deckId: aiDeckId,
+        createdAt: Date.now(),
+        timesStudied: 0,
+        correctCount: 0,
+        incorrectCount: 0,
+      }));
+      setFlashcards((prev) => [...prev, ...additions]);
+      setAiTopic('');
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Generation failed.');
+    } finally {
+      setAiBusy(false);
+    }
+  }
 
   const handleEditCard = (card: Flashcard) => {
     setEditingCard(card);
@@ -99,6 +154,71 @@ export function ManageCards() {
           </div>
         ) : (
           <>
+            <Card className="mb-6 border-primary/20 bg-muted/30 p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Sparkles className="size-5 text-primary" aria-hidden />
+                <h2 className="text-lg font-semibold">Generate with AI</h2>
+              </div>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Uses the OpenAI key from{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">
+                  VITE_OPENAI_API_KEY
+                </code>{" "}
+                in <code className="rounded bg-muted px-1.5 py-0.5">web/.env</code> (restart{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5">npm run dev</code> after
+                changes).
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="ai-topic">Topic</Label>
+                  <Input
+                    id="ai-topic"
+                    value={aiTopic}
+                    onChange={(e) => setAiTopic(e.target.value)}
+                    placeholder="e.g. irregular verbs in English"
+                    disabled={aiBusy}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-deck">Deck</Label>
+                  <Select value={aiDeckId} onValueChange={setAiDeckId} disabled={aiBusy}>
+                    <SelectTrigger id="ai-deck">
+                      <SelectValue placeholder="Deck" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {decks.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-count">Number of cards</Label>
+                  <Input
+                    id="ai-count"
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={aiCount}
+                    onChange={(e) =>
+                      setAiCount(Math.min(30, Math.max(1, Number(e.target.value) || 1)))
+                    }
+                    disabled={aiBusy}
+                  />
+                </div>
+              </div>
+              <Button
+                className="mt-4"
+                type="button"
+                disabled={aiBusy || !aiTopic.trim() || !aiDeckId}
+                onClick={() => void handleGenerateAi()}
+              >
+                {aiBusy ? "Generating…" : "Generate cards"}
+              </Button>
+            </Card>
+
             <div className="flex gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

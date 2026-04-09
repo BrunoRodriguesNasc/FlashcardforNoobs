@@ -25,6 +25,7 @@ export interface StudySession {
   cardsStudied: number;
   correctAnswers: number;
   incorrectAnswers: number;
+  /** Session length in milliseconds */
   duration: number;
   date: number;
   studyMode: 'flashcard' | 'quiz';

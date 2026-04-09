@@ -51,20 +51,26 @@ export function Home() {
     navigate(`/study/${deckId}`);
   };
 
+  const handleAddCards = (deckId: string) => {
+    navigate(`/cards?deck=${encodeURIComponent(deckId)}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+      <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <Library className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">My Flashcards</h1>
-              <p className="text-sm text-muted-foreground">Study smarter, not harder</p>
+            <div className="min-w-0">
+              <h1 className="text-3xl font-bold tracking-tight">flashcardfoornoobs</h1>
+              <p className="text-sm text-muted-foreground">
+                Flashcards without the fluff
+              </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:gap-3 sm:pr-1">
             <Button variant="outline" onClick={() => navigate('/statistics')}>
               <BarChart3 className="w-4 h-4 mr-2" />
               Statistics
@@ -99,6 +105,7 @@ export function Home() {
                 deck={deck}
                 cardCount={getCardCount(deck.id)}
                 onStudy={handleStudy}
+                onAddCards={handleAddCards}
                 onEdit={handleEditDeck}
                 onDelete={handleDeleteDeck}
               />

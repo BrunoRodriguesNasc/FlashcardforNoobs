@@ -15,7 +15,7 @@ export function StudyEnhanced() {
   const { deckId } = useParams<{ deckId: string }>();
   const [decks] = useLocalStorage<Deck[]>('flashcard-decks', []);
   const [flashcards, setFlashcards] = useLocalStorage<Flashcard[]>('flashcards', []);
-  const [sessions, setSessions] = useLocalStorage<StudySession[]>('study-sessions', []);
+  const [, setSessions] = useLocalStorage<StudySession[]>("study-sessions", []);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
@@ -37,10 +37,11 @@ export function StudyEnhanced() {
   }, [sessionEpoch]);
 
   useEffect(() => {
-    if (deckCards.length > 0) {
-      setStudyCards(deckCards);
+    const next = flashcards.filter((c) => c.deckId === deckId);
+    if (next.length > 0) {
+      setStudyCards(next);
     }
-  }, [deckId, deckCards]);
+  }, [deckId]);
 
   useEffect(() => {
     if (isComplete) return undefined;
