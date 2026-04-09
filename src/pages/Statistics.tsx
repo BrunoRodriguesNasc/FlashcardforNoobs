@@ -37,7 +37,12 @@ export function Statistics() {
 
   const totalCards = flashcards.length;
   // `StudySession.duration` is stored in milliseconds (see StudyEnhanced.finishSession).
-  const totalStudyMs = sessions.reduce((acc, s) => acc + s.duration, 0);
+  // Coerce each value with Number(): if any entry is a string (e.g. legacy JSON), `0 + "3"`
+  // becomes `"03"` and `"03" + 3000` becomes `"033000"`, which displays as 0:33 instead of 0:03.
+  const totalStudyMs = sessions.reduce(
+    (acc, s) => acc + (Number(s.duration) || 0),
+    0,
+  );
   const totalStudyTimeLabel = formatTotalStudyTime(totalStudyMs);
   
   const correctAnswers = sessions.reduce((acc, s) => acc + s.correctAnswers, 0);
