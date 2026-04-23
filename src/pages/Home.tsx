@@ -64,7 +64,7 @@ export function Home() {
               <Library className="w-6 h-6 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-3xl font-bold tracking-tight">flashcardfoornoobs</h1>
+              <h1 className="text-3xl font-bold tracking-tight">flashcardfordumbs</h1>
               <p className="text-sm text-muted-foreground">
                 Flashcards without the fluff
               </p>
